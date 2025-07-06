@@ -1,0 +1,159 @@
+Personal Finance Assistant Project Outline
+Overview
+The Personal Finance Assistant is a full-stack web application for tracking income and expenses, categorizing transactions, visualizing spending habits, and extracting data from receipts and transaction history PDFs. It supports multiple users, pagination, and robust error handling.
+Tech Stack
+
+Frontend: React.js, Tailwind CSS, Chart.js (via react-chartjs-2), Axios, CDN-hosted (jsDelivr).
+Backend: Node.js, Express.js, MongoDB, Mongoose, Multer.
+Receipt/PDF Processing: Tesseract.js (OCR), pdf2pic, pdf-parse, Natural (NLP).
+Authentication: JWT, bcrypt.
+Tools: Docker, ESLint, Prettier, Vite.
+Chatbot for personalized financial advice (using Grok 3 API).
+
+Data Model (MongoDB Schemas)
+User
+{
+  _id: ObjectId,
+  email: String (unique, required),
+  password: String (hashed, required),
+  name: String,
+  createdAt: Date
+}
+
+Transaction
+{
+  _id: ObjectId,
+  userId: ObjectId (references User),
+  type: String (enum: ["income", "expense"], required),
+  amount: Number (required),
+  category: String (required, e.g., "Food", "Salary"),
+  date: Date (required),
+  description: String,
+  createdAt: Date
+}
+
+Category
+{
+  _id: ObjectId,
+  userId: ObjectId (references User, nullable for default categories),
+  name: String (required, unique per user),
+  type: String (enum: ["income", "expense"])
+}
+
+Backend Structure
+Directory Structure
+backend/
+├── src/
+│   ├── config/           # Database and environment configs
+│   ├── controllers/      # API logic (e.g., transaction, user, receipt)
+│   ├── middleware/       # Authentication, error handling
+│   ├── models/           # Mongoose schemas (User, Transaction, Category)
+│   ├── routes/           # API routes
+│   ├── services/         # Receipt/PDF processing logic
+│   └── utils/            # Helper functions (e.g., error handling, parsing)
+├── Dockerfile            # Docker configuration
+├── package.json          # Dependencies and scripts
+└── README.md             # Setup and run instructions
+
+API Endpoints
+
+Authentication
+POST /api/auth/register: Register a new user (email, password, name).
+POST /api/auth/login: Login and return JWT.
+
+
+Transactions
+POST /api/transactions: Create income/expense entry (authenticated).
+GET /api/transactions?startDate=&endDate=&page=&limit=: List transactions in a time range with pagination.
+PUT /api/transactions/:id: Update transaction (authenticated).
+DELETE /api/transactions/:id: Delete transaction (authenticated).
+
+
+Categories
+GET /api/categories: List user-specific and default categories.
+POST /api/categories: Create custom category (authenticated).
+
+
+Receipt Processing
+POST /api/receipts/upload: Upload receipt (image/PDF), extract data, and create transaction (authenticated).
+
+
+Transaction History (Bonus)
+POST /api/transactions/upload-history: Upload PDF with tabular transaction history, parse, and store (authenticated).
+
+
+
+Receipt/PDF Processing
+
+Image Receipts: Use Tesseract.js to extract text, then Natural to parse amount, date, and potential category.
+PDF Receipts: Use pdf2pic to convert to images, then apply Tesseract.js and Natural.
+Tabular PDF History (Bonus): Use pdf-parse to extract table data, map to Transaction schema, and store.
+
+Frontend Structure
+Directory Structure
+frontend/
+├── public/
+│   └── index.html        # Single-page HTML with CDN imports
+├── src/
+│   ├── components/       # Reusable React components
+│   ├── pages/            # Page components (Home, Transactions, Charts)
+│   ├── hooks/            # Custom hooks (e.g., useAuth, useTransactions)
+│   ├── styles/           # Tailwind CSS and custom styles
+│   └── App.jsx           # Main app component
+├── vite.config.js        # Vite configuration
+├── package.json          # Dependencies and scripts
+└── README.md             # Setup and run instructions
+
+Key Components
+
+Auth: Login and Register forms with JWT handling.
+TransactionForm: Form to add income/expense with fields for amount, category, date, and description.
+TransactionList: Paginated table of transactions with filters for date range.
+Charts: Displays expenses by category (pie chart) and by date (line chart) using Chart.js.
+ReceiptUpload: File input for uploading receipts, displays extracted data for confirmation.
+HistoryUpload (Bonus): File input for tabular PDF transaction history.
+
+Bonus Features
+
+Multiple Users: JWT-based authentication ties transactions and categories to userId.
+Pagination: Implemented in GET /api/transactions with query params page and limit.
+PDF Transaction History: Parse tabular PDFs using pdf-parse, map to Transaction schema, and store.
+
+Code Quality
+
+Clean Code: Use descriptive names (e.g., createTransaction, parseReceiptText), avoid nested logic.
+Modularity: Separate concerns (controllers, services, models) and reusable React components.
+Documentation: README.md with setup, run instructions, and API documentation.
+Error Handling: Validate inputs, handle file upload errors, and return meaningful API error messages.
+Comments: Used sparingly for complex logic (e.g., receipt parsing).
+
+Setup Instructions (README.md)
+
+Backend:
+Install Node.js and MongoDB.
+Run npm install in backend/.
+Set up .env with MONGO_URI, JWT_SECRET, and PORT.
+Run npm start to start Express server.
+Optionally, use Docker: docker build -t finance-app . && docker run -p 3000:3000 finance-app.
+
+
+Frontend:
+Install Node.js.
+Run npm install in frontend/.
+Run npm run dev to start Vite development server.
+Access at http://localhost:5173.
+
+
+Dependencies:
+Backend: express, mongoose, multer, jsonwebtoken, bcrypt, tesseract.js, pdf2pic, pdf-parse, natural.
+Frontend: react, react-dom, axios, tailwindcss, react-chartjs-2, chart.js.
+
+
+
+Next Steps
+
+Implement backend routes and controllers.
+Develop frontend components and API integration.
+Test receipt and PDF parsing with sample files.
+Ensure responsiveness and accessibility in UI.
+Deploy backend with Docker and frontend via static hosting (e.g., Netlify).
